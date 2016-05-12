@@ -44,12 +44,12 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Board = __webpack_require__(1);
-	var View = __webpack_require__(3);
+	var View = __webpack_require__(1);
 	
 	$(function () {
-	  var $board = $(".sudoku");
-	  new View($board);
+	  var $sudoku = $(".sudoku");
+	  var $board = $(".board");
+	  new View($sudoku, $board);
 	});
 
 
@@ -57,7 +57,119 @@
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var NodeTree = __webpack_require__(2);
+	var Game = __webpack_require__(2);
+	
+	function View ($sudoku, $board) {
+	  this.$sudoku = $sudoku;
+	  this.$board = $board;
+	  this.addEvents();
+	  this.bindEvents();
+	}
+	
+	View.prototype.addEvents = function () {
+	  $easyBtn = $("<button>");
+	  $easyBtn.attr("id", "easy-btn");
+	  $easyBtn.append("Easy Mode");
+	  $easyBtn.addClass("level-btn");
+	
+	  $middleBtn = $("<button>");
+	  $middleBtn.attr("id", "middle-btn");
+	  $middleBtn.append("Medium Mode");
+	  $middleBtn.addClass("level-btn");
+	
+	  $hardBtn = $("<button>");
+	  $hardBtn.attr("id", "hard-btn");
+	  $hardBtn.append("Hard Mode");
+	  $hardBtn.addClass("level-btn");
+	
+	  this.$board.append($easyBtn);
+	  this.$board.append($middleBtn);
+	  this.$board.append($hardBtn);
+	};
+	
+	View.prototype.bindEvents = function () {
+	  var that = this;
+	  $("#easy-btn").click(function (){
+	    that.startGame(1);
+	  });
+	
+	  $("#middle-btn").click(function (){
+	    that.startGame(2);
+	  });
+	
+	  $("#hard-btn").click(function (){
+	    that.startGame(3);
+	  });
+	};
+	
+	View.prototype.startGame = function (level) {
+	  this.game = new Game(level);
+	  $div = $("<div>");
+	  $div.addClass("num");
+	  $div.append(level);
+	  $("div").remove(".num");
+	  this.$board.append($div);
+	};
+	
+	module.exports = View;
+
+
+/***/ },
+/* 2 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Board = __webpack_require__(3);
+	
+	function Game (level) {
+	  this.board = new Board();
+	  var last = this.board.createFirstRow();
+	  this.board.createRestNode(last); //create a board
+	  this.boardArray = this.board.boardArray; // put every node from pos [0,0], [0,1],..., [8,8] in an array
+	  this.startGame(level);
+	}
+	
+	Game.prototype.startGame = function (level) {
+	  if (level === 1) {
+	    this.easyMode();
+	  }
+	  else if (level === 2) {
+	    this.middleMode();
+	  }
+	  else if (level === 3) {
+	    this.hardMode();
+	  }
+	};
+	
+	Game.prototype.easyMode = function () {
+	
+	};
+	
+	Game.prototype.middleMode = function () {
+	
+	};
+	
+	Game.prototype.hardMode = function () {
+	
+	};
+	
+	Game.prototype.isOver = function () {
+	
+	};
+	
+	Game.prototype.winYet = function () {
+	
+	};
+	
+	
+	
+	module.exports = Game;
+
+
+/***/ },
+/* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var NodeTree = __webpack_require__(4);
 	
 	function Board () {
 	  this.root = new NodeTree();
@@ -67,6 +179,9 @@
 	  this.root.val = rand.pop();
 	  this.root.possibleVal = rand;
 	  this.boardArray = [this.root];
+	  // find node in boardArray:
+	  // row = node.pos[0] + 1, col = node.pos[1] + 1
+	  // i = row * col - 1, boardArray[i] === node
 	}
 	
 	// create a node but do not set val for the node
@@ -127,7 +242,7 @@
 
 
 /***/ },
-/* 2 */
+/* 4 */
 /***/ function(module, exports) {
 
 	function NodeTree (node) {
@@ -251,18 +366,6 @@
 	}
 	
 	module.exports = NodeTree;
-
-
-/***/ },
-/* 3 */
-/***/ function(module, exports) {
-
-	function View ($board, board) {
-	  this.$board = $board;
-	  this.board = board;
-	}
-	
-	module.exports = View;
 
 
 /***/ }
