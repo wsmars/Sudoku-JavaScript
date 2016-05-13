@@ -58,6 +58,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var Game = __webpack_require__(2);
+	var Clock = __webpack_require__(5);
 	
 	function View ($sudoku, $board) {
 	  this.$sudoku = $sudoku;
@@ -87,10 +88,30 @@
 	  this.$board.append($hardBtn);
 	};
 	
-	View.prototype.beforeStart = function (level) {
+	View.prototype.bindEvents = function () {
+	  var that = this;
+	
+	  $("#easy-btn").click(function (){
+	    that.startGame(1);
+	  });
+	
+	  $("#middle-btn").click(function (){
+	    that.startGame(2);
+	  });
+	
+	  $("#hard-btn").click(function (){
+	    that.startGame(3);
+	  });
+	};
+	
+	View.prototype.startGame = function (level) {
 	  var that = this;
 	  clearTimeout(window.timeOut);
 	  $("table").remove(".grid");
+	  if (this.clock) {
+	    this.clock.stopClock();
+	  }
+	  $("div").remove(".clock-container");
 	  $("div").remove(".loading");
 	  var $div = $("<div>");
 	  $div.addClass("loading");
@@ -98,35 +119,25 @@
 	  this.$board.append($div);
 	  window.timeOut = setTimeout(function() {
 	    $("div").remove(".loading");
-	    that.startGame(level);
+	    that.createGame(level);
 	  }, 1000);
 	};
 	
-	View.prototype.bindEvents = function () {
-	  var that = this;
+	View.prototype.createGame = function (level) {
+	  this.game = new Game(level);
+	  this.clock = new Clock();
 	
-	  $("#easy-btn").click(function (){
-	    that.beforeStart(1);
-	  });
-	
-	  $("#middle-btn").click(function (){
-	    that.beforeStart(2);
-	  });
-	
-	  $("#hard-btn").click(function (){
-	    that.beforeStart(3);
-	  });
+	  this.setupTable(this.game);
+	  this.setupClock(this.clock);
 	};
 	
-	View.prototype.startGame = function (level) {
-	  this.game = new Game(level);
-	
+	View.prototype.setupTable = function (game) {
 	  var $table = $("<table>");
 	  $table.addClass("grid");
 	  var $row = {};
 	  var $entry = {};
 	
-	  var boardArray = this.game.boardArray;
+	  var boardArray = game.boardArray;
 	  var k;
 	  for (var i = 0; i < 9; i++) {
 	    $row[i] = $("<tr>");
@@ -140,6 +151,20 @@
 	  }
 	  $("table").remove(".grid");
 	  this.$board.append($table);
+	};
+	
+	View.prototype.setupClock= function (clock) {
+	  var $div = $("<div>");
+	  var $h3 = $("<h3>");
+	  var $h4 = $("<h4>");
+	  $h4.attr('id', 'clock');
+	  $div.addClass("clock-container");
+	  $div.append($h3);
+	  $div.append($h4);
+	  this.$board.append($div);
+	
+	  $h3.append("Time: ")
+	  $h4.append(clock.tick());
 	};
 	
 	module.exports = View;
@@ -397,6 +422,38 @@
 	}
 	
 	module.exports = NodeTree;
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports) {
+
+	function Clock () {
+	  this.startTime = new Date();
+	}
+	
+	Clock.prototype.parse = function() {
+	  var diff = new Date(new Date() - this.startTime);
+	  var hour = ((diff.getHours()-16)<10?'0':'') + (diff.getHours()-16)
+	  var min = (diff.getMinutes()<10?'0':'') + diff.getMinutes()
+	  var sec = (diff.getSeconds()<10?'0':'') + diff.getSeconds()
+	  var display = document.getElementById('clock');
+	  display.innerHTML = hour + ":" + min + ":" + sec
+	}
+	
+	Clock.prototype.tick = function() {
+	  var that = this;
+	  this.parse();
+	  this.interval = setInterval(function() { that.parse() }, 500);
+	}
+	
+	Clock.prototype.stopClock = function() {
+	  var that = this;
+	
+	  clearInterval(that.interval);
+	}
+	
+	module.exports = Clock;
 
 
 /***/ }

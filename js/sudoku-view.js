@@ -1,4 +1,5 @@
 var Game = require("../lib/game");
+var Clock = require("../lib/clock");
 
 function View ($sudoku, $board) {
   this.$sudoku = $sudoku;
@@ -28,10 +29,30 @@ View.prototype.addEvents = function () {
   this.$board.append($hardBtn);
 };
 
-View.prototype.beforeStart = function (level) {
+View.prototype.bindEvents = function () {
+  var that = this;
+
+  $("#easy-btn").click(function (){
+    that.startGame(1);
+  });
+
+  $("#middle-btn").click(function (){
+    that.startGame(2);
+  });
+
+  $("#hard-btn").click(function (){
+    that.startGame(3);
+  });
+};
+
+View.prototype.startGame = function (level) {
   var that = this;
   clearTimeout(window.timeOut);
   $("table").remove(".grid");
+  if (this.clock) {
+    this.clock.stopClock();
+  }
+  $("div").remove(".clock-container");
   $("div").remove(".loading");
   var $div = $("<div>");
   $div.addClass("loading");
@@ -39,35 +60,25 @@ View.prototype.beforeStart = function (level) {
   this.$board.append($div);
   window.timeOut = setTimeout(function() {
     $("div").remove(".loading");
-    that.startGame(level);
+    that.createGame(level);
   }, 1000);
 };
 
-View.prototype.bindEvents = function () {
-  var that = this;
+View.prototype.createGame = function (level) {
+  this.game = new Game(level);
+  this.clock = new Clock();
 
-  $("#easy-btn").click(function (){
-    that.beforeStart(1);
-  });
-
-  $("#middle-btn").click(function (){
-    that.beforeStart(2);
-  });
-
-  $("#hard-btn").click(function (){
-    that.beforeStart(3);
-  });
+  this.setupTable(this.game);
+  this.setupClock(this.clock);
 };
 
-View.prototype.startGame = function (level) {
-  this.game = new Game(level);
-
+View.prototype.setupTable = function (game) {
   var $table = $("<table>");
   $table.addClass("grid");
   var $row = {};
   var $entry = {};
 
-  var boardArray = this.game.boardArray;
+  var boardArray = game.boardArray;
   var k;
   for (var i = 0; i < 9; i++) {
     $row[i] = $("<tr>");
@@ -81,6 +92,20 @@ View.prototype.startGame = function (level) {
   }
   $("table").remove(".grid");
   this.$board.append($table);
+};
+
+View.prototype.setupClock= function (clock) {
+  var $div = $("<div>");
+  var $h3 = $("<h3>");
+  var $h4 = $("<h4>");
+  $h4.attr('id', 'clock');
+  $div.addClass("clock-container");
+  $div.append($h3);
+  $div.append($h4);
+  this.$board.append($div);
+
+  $h3.append("Time: ")
+  $h4.append(clock.tick());
 };
 
 module.exports = View;
