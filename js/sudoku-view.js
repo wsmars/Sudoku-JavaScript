@@ -4,62 +4,87 @@ var Clock = require("../lib/clock");
 function View ($sudoku, $board) {
   this.$sudoku = $sudoku;
   this.$board = $board;
-  this.addEvents();
+  this.addMainMenu();
   this.bindEvents();
 }
 
-View.prototype.addEvents = function () {
-  $easyBtn = $("<button>");
+View.prototype.addMainMenu = function () {
+  var $ol = $("<ol>");
+  $ol.append("<h4>Instruction:</h4>");
+  $ol.append("<li>Choose level to start game.</li>");
+  $ol.append("<li>The Timer will run once the game started.</li>");
+  $ol.append("<li>Selecet an empty box to fill in a number.</li>");
+  $ol.append("<li>The number can only be from 1 to 9.</li>");
+  $ol.append("<li>Any row, column, 3x3 box can only contain same number once.</li>");
+  $ol.append("<li>After all boxes filled, click \"Submit\" button to check result.</li>");
+  $ol.append("<li>Click \"Back\" return to main menu.</li>");
+  $ol.append("<li>Have Fun!</li>");
+
+  var $demoBtn = $("<button>");
+  $demoBtn.attr("id", "demo-btn");
+  $demoBtn.append("Demo Mode");
+  $demoBtn.addClass("level-btn");
+
+  var $easyBtn = $("<button>");
   $easyBtn.attr("id", "easy-btn");
   $easyBtn.append("Easy Mode");
   $easyBtn.addClass("level-btn");
 
-  $middleBtn = $("<button>");
+  var $middleBtn = $("<button>");
   $middleBtn.attr("id", "middle-btn");
   $middleBtn.append("Medium Mode");
   $middleBtn.addClass("level-btn");
 
-  $hardBtn = $("<button>");
+  var $hardBtn = $("<button>");
   $hardBtn.attr("id", "hard-btn");
   $hardBtn.append("Hard Mode");
   $hardBtn.addClass("level-btn");
 
-  this.$board.append($easyBtn);
-  this.$board.append($middleBtn);
-  this.$board.append($hardBtn);
+  var $container = $("<div>");
+  $container.addClass("btn-container");
+  $container.append($demoBtn);
+  $container.append($easyBtn);
+  $container.append($middleBtn);
+  $container.append($hardBtn);
+
+  this.$board.append($ol);
+  this.$board.append($container);
 };
 
 View.prototype.bindEvents = function () {
   var that = this;
 
   $("#easy-btn").click(function (){
-    that.startGame(1);
-  });
-
-  $("#middle-btn").click(function (){
     that.startGame(2);
   });
 
-  $("#hard-btn").click(function (){
+  $("#middle-btn").click(function (){
     that.startGame(3);
+  });
+
+  $("#hard-btn").click(function (){
+    that.startGame(4);
+  });
+
+  $("#demo-btn").click(function (){
+    that.startGame(1);
   });
 };
 
 View.prototype.startGame = function (level) {
   var that = this;
   clearTimeout(window.timeOut);
-  $("table").remove(".grid");
+  $(".grid").remove();
+  $(".loading").remove();
   if (this.clock) {
     this.clock.stopClock();
   }
-  $("div").remove(".clock-container");
-  $("div").remove(".loading");
   var $div = $("<div>");
   $div.addClass("loading");
-  $div.append("Loading");
-  this.$board.append($div);
+  $div.append("Loading...");
+  this.$board.html($div);
   window.timeOut = setTimeout(function() {
-    $("div").remove(".loading");
+    $(".loading").text("");
     that.createGame(level);
   }, 1000);
 };
@@ -68,13 +93,21 @@ View.prototype.createGame = function (level) {
   this.game = new Game(level);
   this.clock = new Clock();
 
-  this.setupTable(this.game);
+  var $container = $("<div>");
+  $container.addClass("table-container");
+  this.$board.html($container);
+
   this.setupClock(this.clock);
+  this.setupTable(this.game);
+  this.setupReturnBtn();
+  this.setupSubmitBtn();
 };
 
 View.prototype.setupTable = function (game) {
   var $table = $("<table>");
   $table.addClass("grid");
+
+  var $input = {};
   var $row = {};
   var $entry = {};
 
@@ -85,27 +118,98 @@ View.prototype.setupTable = function (game) {
     for (var j = 0; j < 9; j++) {
       k = (i*9) + j;
       $entry[k] = $("<td>");
-      $entry[k].append(boardArray[k].val);
+      if (boardArray[k].val) {
+        $entry[k].append(boardArray[k].val);
+      }
+      else {
+        $input[k] = $("<input>");
+        $input[k].attr("type","number");
+        $input[k].data("pos", [i,j]);
+        $entry[k].append($input[k]);
+      }
       $row[i].append($entry[k]);
     }
     $table.append($row[i]);
   }
   $("table").remove(".grid");
-  this.$board.append($table);
+
+  $(".table-container").append($table);
+
+  var $marginL = $("table").css('margin-left');
+  $(".clock-container").css("margin-left", $marginL);
 };
 
 View.prototype.setupClock= function (clock) {
   var $div = $("<div>");
   var $h3 = $("<h3>");
   var $h4 = $("<h4>");
+  
   $h4.attr('id', 'clock');
   $div.addClass("clock-container");
   $div.append($h3);
   $div.append($h4);
-  this.$board.append($div);
+  $(".table-container").append($div);
 
   $h3.append("Time: ")
   $h4.append(clock.tick());
+};
+
+View.prototype.setupReturnBtn = function () {
+  var that = this;
+  var $returnBtn = $("<button>");
+  var $div = $("<div>");
+
+  $div.addClass("return-btn-container");
+  $returnBtn.attr("id", "return-btn");
+  $returnBtn.append("Back");
+  $returnBtn.addClass("return-btn");
+  $div.append($returnBtn);
+  $(".table-container").append($div);
+
+  $("#return-btn").click(function (){
+    if (that.clock) {
+      that.clock.stopClock();
+    }
+    $("div").remove(".table-container");
+    $("div").remove(".btn-container");
+    var $sudoku = $(".sudoku");
+    var $board = $(".board");
+    new View($sudoku, $board);
+  });
+};
+
+View.prototype.setupSubmitBtn = function () {
+  var that = this;
+  var $submitBtn = $("<button>");
+  var $div = $("<div>");
+
+  $div.addClass("submit-btn-container");
+  $submitBtn.attr("id", "submit-btn");
+  $submitBtn.append("Submit");
+  $submitBtn.addClass("submit-btn");
+  $div.append($submitBtn);
+  $(".table-container").append($div);
+
+  $("#submit-btn").click(function (){
+    that.handleSubmit();
+  });
+};
+
+View.prototype.handleSubmit = function () {
+  var isOver = this.game.isOver();
+  var winYet = this.game.winYet();
+  if (isOver && winYet) {
+    this.clock.stopClock();
+    this.clock.parse();
+    $(".submit-btn").remove();
+    alert("You Win!");
+  }
+  else if (isOver && !winYet) {
+    this.game.notWinYet();
+  }
+  else {
+    alert("Not Finish Yet!");
+  }
 };
 
 module.exports = View;

@@ -63,62 +63,87 @@
 	function View ($sudoku, $board) {
 	  this.$sudoku = $sudoku;
 	  this.$board = $board;
-	  this.addEvents();
+	  this.addMainMenu();
 	  this.bindEvents();
 	}
 	
-	View.prototype.addEvents = function () {
-	  $easyBtn = $("<button>");
+	View.prototype.addMainMenu = function () {
+	  var $ol = $("<ol>");
+	  $ol.append("<h4>Instruction:</h4>");
+	  $ol.append("<li>Choose level to start game.</li>");
+	  $ol.append("<li>The Timer will run once the game started.</li>");
+	  $ol.append("<li>Selecet an empty box to fill in a number.</li>");
+	  $ol.append("<li>The number can only be from 1 to 9.</li>");
+	  $ol.append("<li>Any row, column, 3x3 box can only contain same number once.</li>");
+	  $ol.append("<li>After all boxes filled, click \"Submit\" button to check result.</li>");
+	  $ol.append("<li>Click \"Back\" return to main menu.</li>");
+	  $ol.append("<li>Have Fun!</li>");
+	
+	  var $demoBtn = $("<button>");
+	  $demoBtn.attr("id", "demo-btn");
+	  $demoBtn.append("Demo Mode");
+	  $demoBtn.addClass("level-btn");
+	
+	  var $easyBtn = $("<button>");
 	  $easyBtn.attr("id", "easy-btn");
 	  $easyBtn.append("Easy Mode");
 	  $easyBtn.addClass("level-btn");
 	
-	  $middleBtn = $("<button>");
+	  var $middleBtn = $("<button>");
 	  $middleBtn.attr("id", "middle-btn");
 	  $middleBtn.append("Medium Mode");
 	  $middleBtn.addClass("level-btn");
 	
-	  $hardBtn = $("<button>");
+	  var $hardBtn = $("<button>");
 	  $hardBtn.attr("id", "hard-btn");
 	  $hardBtn.append("Hard Mode");
 	  $hardBtn.addClass("level-btn");
 	
-	  this.$board.append($easyBtn);
-	  this.$board.append($middleBtn);
-	  this.$board.append($hardBtn);
+	  var $container = $("<div>");
+	  $container.addClass("btn-container");
+	  $container.append($demoBtn);
+	  $container.append($easyBtn);
+	  $container.append($middleBtn);
+	  $container.append($hardBtn);
+	
+	  this.$board.append($ol);
+	  this.$board.append($container);
 	};
 	
 	View.prototype.bindEvents = function () {
 	  var that = this;
 	
 	  $("#easy-btn").click(function (){
-	    that.startGame(1);
-	  });
-	
-	  $("#middle-btn").click(function (){
 	    that.startGame(2);
 	  });
 	
-	  $("#hard-btn").click(function (){
+	  $("#middle-btn").click(function (){
 	    that.startGame(3);
+	  });
+	
+	  $("#hard-btn").click(function (){
+	    that.startGame(4);
+	  });
+	
+	  $("#demo-btn").click(function (){
+	    that.startGame(1);
 	  });
 	};
 	
 	View.prototype.startGame = function (level) {
 	  var that = this;
 	  clearTimeout(window.timeOut);
-	  $("table").remove(".grid");
+	  $(".grid").remove();
+	  $(".loading").remove();
 	  if (this.clock) {
 	    this.clock.stopClock();
 	  }
-	  $("div").remove(".clock-container");
-	  $("div").remove(".loading");
 	  var $div = $("<div>");
 	  $div.addClass("loading");
-	  $div.append("Loading");
-	  this.$board.append($div);
+	  $div.append("Loading...");
+	  this.$board.html($div);
 	  window.timeOut = setTimeout(function() {
-	    $("div").remove(".loading");
+	    $(".loading").text("");
 	    that.createGame(level);
 	  }, 1000);
 	};
@@ -127,13 +152,21 @@
 	  this.game = new Game(level);
 	  this.clock = new Clock();
 	
-	  this.setupTable(this.game);
+	  var $container = $("<div>");
+	  $container.addClass("table-container");
+	  this.$board.html($container);
+	
 	  this.setupClock(this.clock);
+	  this.setupTable(this.game);
+	  this.setupReturnBtn();
+	  this.setupSubmitBtn();
 	};
 	
 	View.prototype.setupTable = function (game) {
 	  var $table = $("<table>");
 	  $table.addClass("grid");
+	
+	  var $input = {};
 	  var $row = {};
 	  var $entry = {};
 	
@@ -144,27 +177,98 @@
 	    for (var j = 0; j < 9; j++) {
 	      k = (i*9) + j;
 	      $entry[k] = $("<td>");
-	      $entry[k].append(boardArray[k].val);
+	      if (boardArray[k].val) {
+	        $entry[k].append(boardArray[k].val);
+	      }
+	      else {
+	        $input[k] = $("<input>");
+	        $input[k].attr("type","number");
+	        $input[k].data("pos", [i,j]);
+	        $entry[k].append($input[k]);
+	      }
 	      $row[i].append($entry[k]);
 	    }
 	    $table.append($row[i]);
 	  }
 	  $("table").remove(".grid");
-	  this.$board.append($table);
+	
+	  $(".table-container").append($table);
+	
+	  var $marginL = $("table").css('margin-left');
+	  $(".clock-container").css("margin-left", $marginL);
 	};
 	
 	View.prototype.setupClock= function (clock) {
 	  var $div = $("<div>");
 	  var $h3 = $("<h3>");
 	  var $h4 = $("<h4>");
+	  
 	  $h4.attr('id', 'clock');
 	  $div.addClass("clock-container");
 	  $div.append($h3);
 	  $div.append($h4);
-	  this.$board.append($div);
+	  $(".table-container").append($div);
 	
 	  $h3.append("Time: ")
 	  $h4.append(clock.tick());
+	};
+	
+	View.prototype.setupReturnBtn = function () {
+	  var that = this;
+	  var $returnBtn = $("<button>");
+	  var $div = $("<div>");
+	
+	  $div.addClass("return-btn-container");
+	  $returnBtn.attr("id", "return-btn");
+	  $returnBtn.append("Back");
+	  $returnBtn.addClass("return-btn");
+	  $div.append($returnBtn);
+	  $(".table-container").append($div);
+	
+	  $("#return-btn").click(function (){
+	    if (that.clock) {
+	      that.clock.stopClock();
+	    }
+	    $("div").remove(".table-container");
+	    $("div").remove(".btn-container");
+	    var $sudoku = $(".sudoku");
+	    var $board = $(".board");
+	    new View($sudoku, $board);
+	  });
+	};
+	
+	View.prototype.setupSubmitBtn = function () {
+	  var that = this;
+	  var $submitBtn = $("<button>");
+	  var $div = $("<div>");
+	
+	  $div.addClass("submit-btn-container");
+	  $submitBtn.attr("id", "submit-btn");
+	  $submitBtn.append("Submit");
+	  $submitBtn.addClass("submit-btn");
+	  $div.append($submitBtn);
+	  $(".table-container").append($div);
+	
+	  $("#submit-btn").click(function (){
+	    that.handleSubmit();
+	  });
+	};
+	
+	View.prototype.handleSubmit = function () {
+	  var isOver = this.game.isOver();
+	  var winYet = this.game.winYet();
+	  if (isOver && winYet) {
+	    this.clock.stopClock();
+	    this.clock.parse();
+	    $(".submit-btn").remove();
+	    alert("You Win!");
+	  }
+	  else if (isOver && !winYet) {
+	    this.game.notWinYet();
+	  }
+	  else {
+	    alert("Not Finish Yet!");
+	  }
 	};
 	
 	module.exports = View;
@@ -181,42 +285,157 @@
 	  var last = this.board.createFirstRow();
 	  this.board.createRestNode(last); //create a board
 	  this.boardArray = this.board.boardArray; // put every node from pos [0,0], [0,1],..., [8,8] in an array
+	  this.result = this.setResult();
 	  this.startGame(level);
 	}
 	
+	Game.prototype.setResult = function () {
+	  var result = [];
+	  for (var i = 0; i < 81; i++) {
+	    result.push(this.boardArray[i].val);
+	  }
+	  return result;
+	};
+	
 	Game.prototype.startGame = function (level) {
-	  if (level === 1) {
+	  if (level === 2) {
 	    this.easyMode();
 	  }
-	  else if (level === 2) {
+	  else if (level === 3) {
 	    this.middleMode();
 	  }
-	  else if (level === 3) {
+	  else if (level === 4) {
 	    this.hardMode();
 	  }
+	  else if (level === 1) {
+	    this.demoMode();
+	  }
+	};
+	
+	Game.prototype.demoMode = function () {
+	  var cellOne = getRandomInt(0,80);
+	  var cellTwo = getRandomInt(0,80);
+	  this.boardArray[cellOne].val = null;
+	  this.boardArray[cellTwo].val = null;
 	};
 	
 	Game.prototype.easyMode = function () {
-	
+	  this.cellRemove(2);
 	};
 	
 	Game.prototype.middleMode = function () {
-	
+	  this.cellRemove(3);
 	};
 	
 	Game.prototype.hardMode = function () {
+	  this.cellRemove(4);
+	};
 	
+	Game.prototype.cellRemove = function (level) {
+	  var pos = [];
+	  var rowTemp;
+	  var colTemp;
+	
+	  for (var i = 0; i < level; i++) { //remove row 0 ~ 2 & 6 ~ 8
+	    pos = this.blockPosToRemove();
+	    for (var j = 0; j < pos.length; j++) {
+	      rowTemp = pos[j][0];
+	      colTemp = pos[j][1] + i * 3;
+	      this.boardArray[rowTemp*9+colTemp].val = null;
+	      this.boardArray[(8-rowTemp)*9+(8-colTemp)].val = null; // mirror remove;
+	    }
+	  }
+	  var f = [0,1,2,3,4,5,6,7,8];
+	  shuffle(f);
+	  for (var n = 0; n < 2+level; n++) { // remove row 3 & 5
+	    colTemp = f[n];
+	    this.boardArray[3*9+colTemp].val = null;
+	    this.boardArray[5*9+(8-colTemp)].val = null;
+	  }
+	  shuffle(f);
+	  for (var n = 0; n < 2+level; n++) { // remove row 4
+	    colTemp = f[n];
+	    this.boardArray[4*9+colTemp].val = null;
+	  }
+	};
+	
+	Game.prototype.blockPosToRemove = function() {
+	  var ary = [];
+	  for (var i = 0; i < 3; i++) {
+	    for (var j = 0; j < 3; j++) {
+	      ary.push([i, j]);
+	    }
+	  }
+	  shuffle(ary);
+	  for (var k = 0; k < 5; k++) { // k is bigger, the game is easier
+	    ary.pop();
+	  }
+	  return ary;
 	};
 	
 	Game.prototype.isOver = function () {
-	
+	  var pos, value, i;
+	  var boardArray = this.boardArray;
+	  $("input").each(function (){
+	    value = $(this).val();
+	    pos = $(this).data("pos");
+	    i = pos[0] * 9 + pos[1];
+	    if (value) {
+	      boardArray[i].val = Number(value);
+	    }
+	  })
+	  for (var j = 0; j < boardArray.length; j++) {
+	    if (!boardArray[j].val) {
+	      return false;
+	    }
+	  }
+	  return true;
 	};
 	
 	Game.prototype.winYet = function () {
-	
+	  var that = this;
+	  var result = true;
+	  $("input").each(function (){
+	    value = Number($(this).val());
+	    pos = $(this).data("pos");
+	    i = pos[0] * 9 + pos[1];
+	    if (value !== that.result[i]) {
+	      result = false;
+	    }
+	  })
+	  return result;
 	};
 	
+	Game.prototype.notWinYet = function () {
+	  var that = this;
+	  $("input").each(function (){
+	    value = Number($(this).val());
+	    pos = $(this).data("pos");
+	    i = pos[0] * 9 + pos[1];
+	    if (value !== that.result[i]) {
+	      var michael = $(this);
+	      michael.css("color", "red");
+	      michael.keydown(function() {
+	        michael.css("color", "black");
+	      })
+	    }
+	  })
+	  alert("The red number(s) is/are not correct!")
+	};
 	
+	function getRandomInt (min, max) {
+	  return Math.floor(Math.random() * (max - min + 1)) + min;
+	}
+	
+	function shuffle(ary) {
+	  var j, x, i;
+	  for (i = ary.length; i; i -= 1) {
+	    j = Math.floor(Math.random() * i);
+	    x = ary[i - 1];
+	    ary[i - 1] = ary[j];
+	    ary[j] = x;
+	  }
+	}
 	
 	module.exports = Game;
 
@@ -437,8 +656,8 @@
 	  var hour = ((diff.getHours()-16)<10?'0':'') + (diff.getHours()-16)
 	  var min = (diff.getMinutes()<10?'0':'') + diff.getMinutes()
 	  var sec = (diff.getSeconds()<10?'0':'') + diff.getSeconds()
-	  var display = document.getElementById('clock');
-	  display.innerHTML = hour + ":" + min + ":" + sec
+	  var display = hour + ":" + min + ":" + sec;
+	  $("#clock").text(display);
 	}
 	
 	Clock.prototype.tick = function() {

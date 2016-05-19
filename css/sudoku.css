@@ -1,11 +1,44 @@
+html {
+  background-image: url('../assets/images/sunset.png');
+  font-family: Chalkboard, 'Comic Sans', sans-serif;
+}
+
+ol {
+  background-color: #FFF;
+  font-family: Chalkboard, 'Comic Sans', sans-serif;
+  font-size: 20px;
+  display: block;
+  width: 400px;
+  height: 450px;
+  margin-left: auto;
+  margin-right: auto;
+  border: 2px solid #000;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.75);
+}
+
+li {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+button {
+  font-size: 20px;
+  font-family: Chalkboard, 'Comic Sans', sans-serif;
+}
+
 table {
   margin:1em auto;
+  background: white;
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.75);
+  border: 3px solid #000;
 }
 td {
   height: 40px;
   width: 47px;
-  font-size: 40px;
-  font-weight: 500;
+  font-size: 35px;
+  font-weight: 400;
   border: 1px solid;
   text-align: center;
   /*padding: 0;*/
@@ -19,14 +52,16 @@ input[type=number]::-webkit-outer-spin-button {
     margin: 0;
 }
 input {
+  background-color: #C1C1C1;
   height: 100%;
   width: 100%;
-  font-size: 40px;
+  font-size: 35px;
   font-weight: 500;
   text-align: center;
   border: none;
   padding: 0;
 }
+
 tr:first-child {
   border-top:solid;
 }
@@ -38,4 +73,79 @@ td:first-child {
 }
 td:nth-child(3n) {
   border-right:solid ;
+}
+
+.sudoku {
+  font-size: 50px;
+  font-weight: 500;
+  width: 163px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 50px;
+  margin-bottom: 40px;
+}
+
+.board {
+
+}
+
+.loading {
+  position: relative;
+  font-size: 40px;
+  font-weight: 800;
+  text-align: center;
+  top: 200px;
+}
+
+.clock-container {
+  width: 183px;
+  height: 33px;
+  /* background: #A6A6A6; */
+  top: 20px;
+  border: 3px solid white;
+}
+
+.clock-container h3 {
+  float: left;
+  font-size: 20px;
+  color: white;
+  margin-top: 3px;
+  margin-bottom: 0;
+  margin-right: 10px;
+  margin-left: 10px;
+}
+
+.clock-container h4 {
+  float: left;
+  font-size: 25px;
+  font-weight: 400;
+  color: white;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.btn-container {
+  position: relative;
+  top: 20px;
+  height: 60px;
+  width: 570px;
+  margin-left: auto;
+  border: 1px solid #000;
+  margin-right: auto;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.75);
+}
+
+.level-btn {
+  display: inline-block;
+  position: relative;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-top: 14px;
+  margin-bottom: 14px;
+}
+
+.return-btn-container {
+
 }
