@@ -158,6 +158,7 @@
 	
 	  this.setupClock(this.clock);
 	  this.setupTable(this.game);
+	
 	  this.setupReturnBtn();
 	  this.setupSubmitBtn();
 	};
@@ -202,7 +203,7 @@
 	  var $div = $("<div>");
 	  var $h3 = $("<h3>");
 	  var $h4 = $("<h4>");
-	  
+	
 	  $h4.attr('id', 'clock');
 	  $div.addClass("clock-container");
 	  $div.append($h3);
@@ -218,7 +219,7 @@
 	  var $returnBtn = $("<button>");
 	  var $div = $("<div>");
 	
-	  $div.addClass("return-btn-container");
+	  $div.addClass("table-btn-container");
 	  $returnBtn.attr("id", "return-btn");
 	  $returnBtn.append("Back");
 	  $returnBtn.addClass("return-btn");
@@ -240,14 +241,11 @@
 	View.prototype.setupSubmitBtn = function () {
 	  var that = this;
 	  var $submitBtn = $("<button>");
-	  var $div = $("<div>");
 	
-	  $div.addClass("submit-btn-container");
 	  $submitBtn.attr("id", "submit-btn");
 	  $submitBtn.append("Submit");
 	  $submitBtn.addClass("submit-btn");
-	  $div.append($submitBtn);
-	  $(".table-container").append($div);
+	  $(".table-btn-container").append($submitBtn);
 	
 	  $("#submit-btn").click(function (){
 	    that.handleSubmit();
@@ -261,14 +259,37 @@
 	    this.clock.stopClock();
 	    this.clock.parse();
 	    $(".submit-btn").remove();
-	    alert("You Win!");
+	    this.popUpMessage("Congradulations! You Win!");
 	  }
 	  else if (isOver && !winYet) {
-	    this.game.notWinYet();
+	    this.game.notWinYet(this.popUpMessage.bind(this));
 	  }
 	  else {
-	    alert("Not Finish Yet!");
+	    this.popUpMessage("Not finish yet!");
 	  }
+	};
+	
+	View.prototype.popUpMessage = function (message) {
+	  var that = this;
+	  var $div = $("<div>");
+	  var $h3 = $("<h3>");
+	  var $btn = $("<button>");
+	  $div.addClass("message-container");
+	  $h3.addClass("message");
+	  $btn.addClass("message-btn");
+	  $h3.append(message);
+	  $div.append($h3);
+	
+	  $btn.click(function (){
+	    that.removeMessage()
+	  });
+	  $("body").append($div);
+	  $("body").append($btn);
+	};
+	
+	View.prototype.removeMessage = function () {
+	  $("div").remove(".message-container");
+	  $("button").remove(".message-btn");
 	};
 	
 	module.exports = View;
@@ -406,7 +427,7 @@
 	  return result;
 	};
 	
-	Game.prototype.notWinYet = function () {
+	Game.prototype.notWinYet = function (callback) {
 	  var that = this;
 	  $("input").each(function (){
 	    value = Number($(this).val());
@@ -420,7 +441,7 @@
 	      })
 	    }
 	  })
-	  alert("The red number(s) is/are not correct!")
+	  callback("The red number(s) is/are not correct!")
 	};
 	
 	function getRandomInt (min, max) {
