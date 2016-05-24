@@ -97,9 +97,10 @@ View.prototype.createGame = function (level) {
   $container.addClass("table-container");
   this.$board.html($container);
 
-  this.setupClock(this.clock);
   this.setupTable(this.game);
-
+  this.setupClock(this.clock);
+  this.clock.tick();
+  
   this.setupReturnBtn();
   this.setupSubmitBtn();
 };
@@ -134,25 +135,31 @@ View.prototype.setupTable = function (game) {
   }
   $("table").remove(".grid");
 
+  var $div = $("<div>");
+  $div.addClass("clock-out-container");
+
+  $(".table-container").append($div);
   $(".table-container").append($table);
 
-  var $marginL = $("table").css('margin-left');
-  $(".clock-container").css("margin-left", $marginL);
+  var $width = $("table").css("width");
+  $(".clock-out-container").css("width", $width);
 };
 
-View.prototype.setupClock= function (clock) {
+View.prototype.setupClock = function (clock) {
   var $div = $("<div>");
+  $div.addClass("clock-container");
+
   var $h3 = $("<h3>");
   var $h4 = $("<h4>");
 
   $h4.attr('id', 'clock');
-  $div.addClass("clock-container");
-  $div.append($h3);
-  $div.append($h4);
-  $(".table-container").append($div);
 
   $h3.append("Time: ")
-  $h4.append(clock.tick());
+  $h4.append(clock);
+
+  $div.append($h3);
+  $div.append($h4);
+  $(".clock-out-container").append($div);
 };
 
 View.prototype.setupReturnBtn = function () {
