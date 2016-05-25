@@ -104,6 +104,18 @@ td:nth-child(3n) {
   border-right:solid ;
 }
 
+.github {
+  position: absolute;
+  display: block;
+  width: 95%;
+  height: auto;
+  font-size: 30px;
+  color: black;
+  text-decoration: none;
+  text-align: right;
+  margin-top: 10px;
+}
+
 .sudoku {
   font-size: 50px;
   font-weight: 500;
